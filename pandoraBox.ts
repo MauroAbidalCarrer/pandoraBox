@@ -1,5 +1,8 @@
+import * as fs from 'fs';
+
 type ConversationType = 'USER' | 'FOR_USER' | 'SHELL_CMD' | 'EXECUTED_SHELL_CMD' | 'EXIT_STATUS' | 'STDOUT' | 'STDERR';
-type Conversation = Array<string | number>;
+type ConversationElement = [string, string];
+type Conversation = ConversationElement[];
 
 function isConversationType(line: string): boolean {
   const [type] = line.split(':');
@@ -14,27 +17,15 @@ function isConversationType(line: string): boolean {
   );
 }
 
-function createConversationElement(type: ConversationType, value: string): string | number {
-  switch (type) {
-    case 'USER':
-    case 'FOR_USER':
-    case 'SHELL_CMD':
-    case 'EXECUTED_SHELL_CMD':
-    case 'STDOUT':
-    case 'STDERR':
-      return value.trim();
-    case 'EXIT_STATUS':
-      return parseInt(value.trim(), 10);
-    default:
-      throw new Error(`Invalid conversation type: ${type}`);
-  }
+function createConversationElement(type: string, value: string): ConversationElement {
+  return [type.trim(), value.trim()];
 }
 
 function parseConversationFromString(conversationString: string): Conversation {
   const conversation: Conversation = [];
 
   const lines = conversationString.split('\n');
-  let currentType: ConversationType | null = null;
+  let currentType: string | null = null;
   let currentValue = '';
 
   for (const line of lines) {
@@ -47,7 +38,7 @@ function parseConversationFromString(conversationString: string): Conversation {
         }
 
         const [type, ...rest] = trimmedLine.split(':');
-        currentType = type.trim() as ConversationType;
+        currentType = type.trim();
         currentValue = rest.join(':').trim();
       } else {
         currentValue += line + '\n';
@@ -62,14 +53,53 @@ function parseConversationFromString(conversationString: string): Conversation {
   return conversation;
 }
 
-// Example usage:
-const conversationString = `USER: This is a user message
-FOR_USER: This is a message for the user
-SHELL_CMD: echo "Hello, World!"
-EXECUTED_SHELL_CMD: echo "Hello, World!"
-STDOUT: Hello, World!
-STDERR: Error: Something went wrong
-EXIT_STATUS: 0`;
+function serializeConversationToString(conversation: Conversation): string {
+  let serializedConversation = '';
 
-const conversation = parseConversationFromString(conversationString);
-console.log('Parsed conversation:', conversation);
+  for (const [type, value] of conversation) {
+    serializedConversation += `${type}:\n${value}\n`;
+  }
+
+  return serializedConversation;
+}
+
+
+// Function to read a file into a string
+function readFileIntoString(fileName: string): string {
+  try {
+    // Check if the file exists
+    if (!fs.existsSync(fileName)) {
+      // If the file doesn't exist, create an empty file
+      fs.writeFileSync(fileName, '');
+      console.log(`Created empty file: ${fileName}`);
+    }
+
+    // Read the file into a string
+    const data: string = fs.readFileSync(fileName, 'utf8');
+    return data;
+  } catch (error) {
+    console.error('Error reading the file:', error);
+    process.exit(1);
+  }
+}
+// Check if the file path argument is provided
+if (process.argv.length < 3) {
+  console.error('Please provide the path to the conversation file as the first argument.');
+  process.exit(1);
+}
+
+// Read the file asynchronously
+fs.readFile(process.argv[2], 'utf8', (err, data) => {
+  if (err) {
+    // If the file doesn't exist, create an empty conversation
+    console.error('File not found. Creating an empty conversation.');
+    console.log('Parsed conversation:', []);
+    return;
+  }
+
+  // Parse the conversation from the file data
+  const conversation = parseConversationFromString(data);
+  console.log('Parsed conversation:', conversation);
+  console.log(`Reserialized conversation:\n`)
+  console.log(serializeConversationToString(conversation))
+});

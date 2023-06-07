@@ -7,8 +7,8 @@ Then another line containing "STDOUT:" the lines after will be the output itself
 Then another line containing "STDERR:" the lines after will be the error output itself if it's not empty.
 
 Your messages will be a series of text for the user(answers to the user's questions, explanations on the shell commands that you output, questions to the user for clarifications, ect...) and shell commands that you want to execute to satisfy the user's requests.
-Messages that you want to pass to the user should be preceded by one line "FOR_USER:" and a feed line.
-Each shell commands should be in between two lines containing "SHELL_CMD ", the index of the command in the list of commands in the answer. a colon ":" and a feed line.
+Messages that you want to pass to the user should be preceded by one line "FOR_USER:" and a line feed.
+Each shell commands should be in between two lines containing "SHELL_CMD:" and a line feed.
 If you want to comment your shell command, please write "FOR_USER" messages before the "SHELL_CMD".
 
 If your message doesn't contain any shell command, control will be returned to the user.
@@ -17,9 +17,9 @@ If your message contains one or more commands, they will be executed one after t
 Then the output of the command will be sent back to you.
 This allows you to plan your action in multiple steps if you need the output of some comands to decide which action to take after.
 For example if you need to know what is the working directory, you can:
-  - "SHELL_CMD 0:\n" and then "pwd".
+  - "SHELL_CMD:\n" and then "pwd".
   - The output will be sent back to you.
-  - "SHELL_CMD 0:\n" and then "cd where/you/need/to/be".
+  - "SHELL_CMD: \n" and then "cd where/you/need/to/be".
 
 DO NOT send text containing "USER:", "STDERR:", "STDOUT:", "EXIT_STATUS: ", "LAST_CMD:" they will be ignored.
 All of the text you output MUST be preceded by either "FOR_USER:" or "SHELL_CMD:" 
@@ -40,7 +40,7 @@ nesjs
 
 
 
-EXECUTED_SHELL_CMD 0:
+EXECUTED_SHELL_CMD:
 npm install -g @nestjs/cli
 EXIT_STATUS: 243
 STDERR:
@@ -72,15 +72,15 @@ npm ERR! A complete log of this run can be found in: /home/ma/.npm/_logs/2023-06
 FOR_USER:
 This error is caused by a permissions issue with npm. To fix it, you can try running the command with sudo privileges.
 This will prompt you to enter your password and then install the NestJS CLI globally with elevated privileges.
-SHELL_CMD 0:
+SHELL_CMD:
 sudo npm install -g @nestjs/cli
 FOR_USER:
 Then test if nestjs is working by running nestjs alone.
-SHELL_CMD 1:
+SHELL_CMD:
 nest
 
 
-EXECUTED_SHELL_CMD 0:
+EXECUTED_SHELL_CMD:
 sudo npm install -g @nestjs/cli
 EXIT_STATUS: 0
 STDOUT:
@@ -89,7 +89,7 @@ changed 248 packages in 6s
 
 44 packages are looking for funding
   run `npm fund` for details
-EXECUTED_SHELL_CMD 1:
+EXECUTED_SHELL_CMD:
 nest
 EXIT_STATUS: 0
 STDOUT:

@@ -13,7 +13,7 @@ nesjs
 
 
 
-EXECUTED_SHELL_CMD 0:
+EXECUTED_SHELL_CMD:
 npm install -g @nestjs/cli
 EXIT_STATUS: 243
 STDERR:
@@ -45,15 +45,15 @@ npm ERR! A complete log of this run can be found in: /home/ma/.npm/_logs/2023-06
 FOR_USER:
 This error is caused by a permissions issue with npm. To fix it, you can try running the command with sudo privileges.
 This will prompt you to enter your password and then install the NestJS CLI globally with elevated privileges.
-SHELL_CMD 0:
+SHELL_CMD:
 sudo npm install -g @nestjs/cli
 FOR_USER:
 Then test if nestjs is working by running nestjs alone.
-SHELL_CMD 1:
+SHELL_CMD:
 nest
 
 
-EXECUTED_SHELL_CMD 0:
+EXECUTED_SHELL_CMD:
 sudo npm install -g @nestjs/cli
 EXIT_STATUS: 0
 STDOUT:
@@ -62,7 +62,7 @@ changed 248 packages in 6s
 
 44 packages are looking for funding
   run `npm fund` for details
-EXECUTED_SHELL_CMD 1:
+EXECUTED_SHELL_CMD:
 nest
 EXIT_STATUS: 0
 STDOUT:
