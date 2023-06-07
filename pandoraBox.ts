@@ -1,37 +1,55 @@
-type USER = string;
-type FOR_USER = string;
-type SHELL_CMD = string;
-type EXECUTED_SHELL_CMD = string;
-type EXIT_STATUS = number;
-type STDOUT = string;
-type STDERR = string;
-type ConversationType = USER | FOR_USER | SHELL_CMD | EXECUTED_SHELL_CMD | EXIT_STATUS | STDOUT | STDERR;
-type Conversation = ConversationType[];
+type ConversationType = 'USER' | 'FOR_USER' | 'SHELL_CMD' | 'EXECUTED_SHELL_CMD' | 'EXIT_STATUS' | 'STDOUT' | 'STDERR';
+type Conversation = Array<string | number>;
+
+function isConversationType(line: string): boolean {
+  const [type] = line.split(':');
+  return (
+    type.trim() === 'USER' ||
+    type.trim() === 'FOR_USER' ||
+    type.trim() === 'SHELL_CMD' ||
+    type.trim() === 'EXECUTED_SHELL_CMD' ||
+    type.trim() === 'EXIT_STATUS' ||
+    type.trim() === 'STDOUT' ||
+    type.trim() === 'STDERR'
+  );
+}
+
+function createConversationElement(type: ConversationType, value: string): string | number {
+  switch (type) {
+    case 'USER':
+    case 'FOR_USER':
+    case 'SHELL_CMD':
+    case 'EXECUTED_SHELL_CMD':
+    case 'STDOUT':
+    case 'STDERR':
+      return value.trim();
+    case 'EXIT_STATUS':
+      return parseInt(value.trim(), 10);
+    default:
+      throw new Error(`Invalid conversation type: ${type}`);
+  }
+}
 
 function parseConversationFromString(conversationString: string): Conversation {
   const conversation: Conversation = [];
 
   const lines = conversationString.split('\n');
-  let currentType: string | null = null;
+  let currentType: ConversationType | null = null;
   let currentValue = '';
 
   for (const line of lines) {
     const trimmedLine = line.trim();
 
-    console.log(`line: \"${trimmedLine}, currentType: ${currentType}, currentValue: ${currentValue}`)
-
     if (trimmedLine.length > 0) {
       if (isConversationType(trimmedLine)) {
-        console.log()
         if (currentType && currentValue) {
           conversation.push(createConversationElement(currentType, currentValue));
         }
 
-        const [type] = trimmedLine.split(':');
-        currentType = type.trim();
-        currentValue = '';
+        const [type, ...rest] = trimmedLine.split(':');
+        currentType = type.trim() as ConversationType;
+        currentValue = rest.join(':').trim();
       } else {
-        console.log("adding line to current value")
         currentValue += line + '\n';
       }
     }
@@ -44,57 +62,14 @@ function parseConversationFromString(conversationString: string): Conversation {
   return conversation;
 }
 
+// Example usage:
+const conversationString = `USER: This is a user message
+FOR_USER: This is a message for the user
+SHELL_CMD: echo "Hello, World!"
+EXECUTED_SHELL_CMD: echo "Hello, World!"
+STDOUT: Hello, World!
+STDERR: Error: Something went wrong
+EXIT_STATUS: 0`;
 
-
-function isConversationType(line: string): boolean {
-  const [type] = line.split(':');
-  console.log(`type: ${type}, ${typeof type}`)
-  return ['USER', 'FOR_USER', 'SHELL_CMD', 'EXECUTED_SHELL_CMD', 'EXIT_STATUS', 'STDOUT', 'STDERR'].some((el) => {
-  console.log(`el: ${el}, el == type: ${el == type}, typeof type`)
-   return el == type.toString()
-  });
-}
-
-function createConversationElement(type: string, value: string): ConversationType {
-  console.log(`Creating conversation element, type: ${type}, value: ${value}`)
-  const trimmedValue = value.trim();
-  switch (type) {
-    case 'USER':
-    case 'FOR_USER':
-    case 'SHELL_CMD':
-    case 'EXECUTED_SHELL_CMD':
-    case 'STDOUT':
-    case 'STDERR':
-      return trimmedValue;
-    case 'EXIT_STATUS':
-      return parseInt(trimmedValue, 10);
-    default:
-      throw new Error(`Invalid conversation type: ${type}`);
-  }
-}
-
-
-// Example conversation string
-const conversationString = `
-USER:
-Hello
-FOR_USER:
-Hi there!
-USER:
-Can you show me the files?
-U hjhsdbfgsdfgkjbhg
-FOR_USER:
-Sure, executing "ls -l"
-EXECUTED_SHELL_CMD:
-ls -l
-EXIT_STATUS:
-0
-STDOUT:
-file1.txt
-file2.txt
-STDERR: 
-`;
-
-// Usage example
 const conversation = parseConversationFromString(conversationString);
 console.log('Parsed conversation:', conversation);
