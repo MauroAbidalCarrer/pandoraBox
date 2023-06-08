@@ -1,1 +1,2 @@
-pandoraBox.js
+*.js
+.env
