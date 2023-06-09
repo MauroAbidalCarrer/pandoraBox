@@ -23,7 +23,7 @@ For example if you need to know what is the working directory, you can:
 
 DO NOT send text containing "USER:", "STDERR:", "STDOUT:", "EXIT_STATUS: ", "LAST_CMD:" they will be ignored.
 All of the text you output MUST be preceded by either "FOR_USER:" or "SHELL_CMD:" 
-
+Every SHELL_CMD that runs a text editor is forbiden, you should write to files using redirections.
 ============================================
 USER:
 Install a nodejs package.

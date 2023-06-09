@@ -11,6 +11,7 @@ export function handleUserPrompt(): void {
       console.log(serializeConversationToString())
     }
       else{
+      answer += "\nEvery SHELL_CMD that runs a text editor is forbiden, you should write to files using redirections."
       conversation.push(['USER', answer])
       getAndHandleAssitantAnswer()
     }
@@ -36,16 +37,11 @@ function handleAssistantAnswer(assistantAnswer: string): void {
       conversation.push(token)
       console.log(blue(token[1]))
     }
-    // else
-    //   console.log(colorRed + "Unrecognized token type: " + token[0] + ", token: " + token[1] + colorReset)
     })
     //handle shell cmds
     let shellCmds = tokenizedAnswer.filter(token => token[0] == 'SHELL_CMD')
     if (shellCmds.length != 0)
-    {
-      console.log('shellCmds: ' + shellCmds)
       handleShellCmds(shellCmds)
-    }
     else
       handleUserPrompt()
 }
@@ -80,7 +76,7 @@ function handleShellCmds(shellCmds: Conversation): void
       handleShellCmds(shellCmds.slice(1))
       else
         handleUserPrompt()
-    if (userAnswer == 'e') {
+    else if (userAnswer == 'e') {
       getUserPrompt((newCmd) => {
       shellCmds[0][1] = newCmd
       runCmd()
@@ -88,7 +84,9 @@ function handleShellCmds(shellCmds: Conversation): void
       'EDIT: ',
       shellCmds[0][1])
     }
-  }, "CMD: '" + blue(shellCmds[0][1]) + "'(" + cyan("s") + "kip/" + cyan("e") + "edit/" + cyan("Enter") + " to run): ")
+    else
+      handleShellCmds(shellCmds)
+  }, "CMD: '" + blue(shellCmds[0][1]) + "'(" + cyan("s") + "kip/" + cyan("e") + "dit/" + cyan("Enter") + " to run): ")
 }
 
 function handleCmdError(error: string, shellCmds: Conversation)
@@ -104,17 +102,18 @@ function handleCmdError(error: string, shellCmds: Conversation)
         handleAssistantAnswer(assistantAnswer)
       })
     }
-  }, 'Send error to assistant? (' + cyan("Enter") + ' to send it/' + cyan('s') + 'kip/ type a message to send in addition to the error)\n')
+  }, 'How to handle the error?\n' + cyan("Enter") + ': send the error to assistant\n' + cyan('s')     + ': skip/ignore\n' + 'Or ' + cyan('type') + ' a message to send with the error : '
+  )
 }
   
-export function getUserPrompt(onPrompted: (arg: string) => void, prompt: string = 'User Input: ', prefill: string = ''): void {
+export function getUserPrompt(onPrompted: (arg: string) => void, prompt: string = 'User Input: ', placeholder: string = ''): void {
   const readline = require('readline');
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
   });
-  console.log('prefill: ', prefill)
-  rl.question(prompt, {defaultInput: prefill}, (answer: string) => {
+  rl.line = placeholder
+  rl.question(prompt, (answer: string) => {
     rl.close();
     onPrompted(answer)
   });

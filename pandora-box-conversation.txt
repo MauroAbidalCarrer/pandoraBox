@@ -2,3 +2,4 @@ USER:
 Write a python hello world and the execute it.
 Don't try to predict the outcome of the command, just write FOR_USER and SHELL_CMD texts.
 Don't try to predict the next input of the user, just write FOR_USER and SHELL_CMD texts.
+SHELL_CMD that run a text editor is forbiden, write to files using redirections.
