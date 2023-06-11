@@ -1,0 +1,11 @@
+[
+  {
+    "role": "user",
+    "tokens": [
+      {
+        "type": "text",
+        "content": "salut"
+      }
+    ]
+  }
+]
