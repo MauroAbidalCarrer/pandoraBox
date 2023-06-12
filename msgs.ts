@@ -94,7 +94,9 @@ export class UserMsg {
   }
 
   async handle(): Promise<void> {
-    const assistantResponse = await getCompletion()
+    console.log("Awaiting for assistant answer")
+    const assistantResponse: string = await getCompletion()
+    console.log("assistant answer: " , assistantResponse)
     conversation.push(new AssistantMsg(assistantResponse))
     saveConversation()
   }

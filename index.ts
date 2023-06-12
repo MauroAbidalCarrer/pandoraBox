@@ -22,13 +22,16 @@ async function main() {
     setupOpenAI()
     //if there is no conversation
     if (conversation.length == 0) {
-        let userInput = await getUserInput("User: ")
-        conversation.push(new UserMsg(userInput))
+        const userInput: string = await getUserInput("User: ", "Write, compile and execute a hello world in C.");
+        const userMsg: UserMsg = new UserMsg(userInput);
+        conversation.push(userMsg);
         saveConversation() 
     }
-    while (true){
-        conversation[conversation.length - 1].handle()
-    }
+    // while (true){
+        console.log(conversation[conversation.length - 1])
+        console.log(conversation[conversation.length - 1] instanceof UserMsg)
+        await conversation[conversation.length - 1].handle()
+    // }
 }
 
 main()

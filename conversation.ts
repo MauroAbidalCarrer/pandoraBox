@@ -7,6 +7,7 @@ export let conversation: (AssistantMsg | UserMsg)[] = []
 
 
 export function saveConversation(): void {
+  console.log("Saving conversation")
 // Convert the conversation object to JSON format
 const conversationJSON = JSON.stringify(conversation, null, 2);
 

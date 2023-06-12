@@ -1,6 +1,6 @@
 
 export function getUserInput(prompt: string, placeholder: string = ''): Promise<string> {
-  console.log("getUserInput called, stack: " + new Error().stack)
+  // console.log("getUserInput called, stack: " + new Error().stack)
   const readline = require('readline');
   const rl = readline.createInterface({
     input: process.stdin,

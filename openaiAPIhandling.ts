@@ -3,11 +3,15 @@ import { Configuration, OpenAIApi, ChatCompletionRequestMessage } from "openai";
 import { config } from 'dotenv'
 import { conversation } from './conversation.js';
 
+
 let openai: OpenAIApi
 let context: string
 
 export function setupOpenAI()
 {
+    if (!fs.existsSync('.env')) {
+        console.log("Could not find .env, I sure hope you've exported your OPENAI_API_KEY...")
+      }
     config()
     const configuration = new Configuration({
         apiKey: process.env.OPENAI_API_KEY,
@@ -30,11 +34,25 @@ export async function getCompletion(): Promise<string> {
         // console.log(`request cost: ${response.data.usage.total_tokens} tokens`);
         // Return the text of the response
         console.log("Answer: ", response.data.choices[0].message?.content)
-        if (typeof response.data.choices[0].message !== typeof undefined)
-            return response.data.choices[0].message?.content;
-        throw new Error("messages is null")
-    } catch (error) {
-        console.log("Caught unexpected error while getting completion: ", error)
+        if ( response.data.choices[0]?.message?.content && typeof response.data.choices[0]?.message?.content === "string") {
+            return response.data.choices[0].message.content;
+        } else {
+        throw new Error("Invalid response from OpenAI API");
+        }
+    }
+     catch (error) 
+     {
+        console.log("OpenAI api error: ", error.message)
+        const errorJSON = JSON.stringify(error, null, 2);
+
+        // Write the JSON data to a file
+        fs.writeFile("openAI-error", errorJSON, 'utf8', (err) => {
+            if (err) {
+            console.error('Error saving conversation OpenAIerror....(Well, that\'s annoying)\n', err);
+            return;
+            }
+            console.log('Invalid response from OpenAI API, Error saved in openAI-error file.');
+        });
         throw error;
     }
 }
