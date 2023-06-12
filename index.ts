@@ -27,11 +27,11 @@ async function main() {
         conversation.push(userMsg);
         saveConversation() 
     }
-    // while (true){
+    while (true){
         console.log(conversation[conversation.length - 1])
-        console.log(conversation[conversation.length - 1] instanceof UserMsg)
+        // console.log(conversation[conversation.length - 1] instanceof UserMsg)
         await conversation[conversation.length - 1].handle()
-    // }
+    }
 }
 
 main()
