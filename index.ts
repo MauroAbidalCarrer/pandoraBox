@@ -4,6 +4,7 @@ import { conversation , saveConversation, loadConversation } from './conversatio
 import { setupOpenAI } from './openaiAPIhandling.js';
 import { getUserInput } from './userInput';
 import { UserMsg, AssistantMsg } from './msgs';
+import { blue } from './colors'
 
 
 async function main() {
@@ -22,12 +23,14 @@ async function main() {
     setupOpenAI()
     //if there is no conversation
     if (conversation.length == 0) {
-        const userInput: string = await getUserInput("User: ", "Write, compile and execute a hello world in C.");
+        const userInput: string = await getUserInput(blue("User: "), "Write, compile and execute a hello world in C.");
         const userMsg: UserMsg = new UserMsg(userInput);
         conversation.push(userMsg);
         saveConversation() 
     }
-    console.log(conversation[conversation.length - 1])
+
+    conversation.forEach(msg => console.log(mdToCLI(msg.toString())))
+    // console.log(conversation[conversation.length - 1])
     await conversation[conversation.length - 1].handle()
 }
 

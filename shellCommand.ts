@@ -74,18 +74,19 @@ export class ShellCommand {
     }
 
     toString(): string {
-      return this.content
+      return "```shell\n" + this.content + "\n```"
     }
 
     toUserMsg(): string{
       let str: string = 'executed command:\n'
+      str += "```shell"
       str += this.content
       if (this.stdout)
-        str += 'stdout:\n' + this.stdout
+      str += 'stdout:\n' + this.stdout
       if (this.stderr)
-        str += 'stderr:\n' + this.stderr
+      str += 'stderr:\n' + this.stderr
       str += 'exit code: ' + this.exitCode
-      str += "\n\n"
+      str += "\n```\n\n"
       return str
     }
   }

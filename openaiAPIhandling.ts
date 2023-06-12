@@ -60,5 +60,6 @@ export async function getCompletion(): Promise<string> {
 function mkMessagesFromConversation(): ChatCompletionRequestMessage[] {
     const msgs: ChatCompletionRequestMessage[] = [{role: 'user', content: context}]
     conversation.forEach(msg => msgs.push(msg.toOpenAImsg()))
+    // console.log("Msgs for openai:\n", msgs)
     return msgs
 }

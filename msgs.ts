@@ -3,6 +3,7 @@ import { ShellCommand } from './shellCommand'
 import { getUserInput, UserInputException } from './userInput';
 import { getCompletion } from './openaiAPIhandling'
 import { conversation, saveConversation } from './conversation'
+import { blue, green } from './colors'
 
 export class AssistantMsg {
     tokens: (string | ShellCommand)[] = [];
@@ -39,12 +40,11 @@ export class AssistantMsg {
           this.tokens.push(textAfterCodeBlocks);
         }
       }
-
-      console.log(this.tokens)
     }
   
     async handle(): Promise<void> {
       try {
+        // console.log("this.lastHandledTokenIndex: ", this.lastHandledTokenIndex, ", this.tokens.length: ", this.tokens.length)
         while (this.lastHandledTokenIndex < this.tokens.length) {
           const token = this.tokens[this.lastHandledTokenIndex];
     
@@ -56,10 +56,19 @@ export class AssistantMsg {
             this.lastHandledTokenIndex++;
             saveConversation()
           }
+          //get user input for the next message
+          const userInput = await getUserInput("User: ")
+          const userMsg = new UserMsg(userInput)
+          conversation.push(userMsg)
+          userMsg.handle()
       } catch (error) {
-        if (error instanceof UserInputException) {
-          conversation.push(new UserMsg(this.MkUserMsgStr() + "\n\nUser: " + error.input))
+        console.log("error.input !== undefined: ", error.input !== undefined)
+        console.log("error instanceof UserInputException: ", error instanceof UserInputException)
+        if (error.input !== undefined) {
+          const newUserMsg = new UserMsg(this.MkUserMsgStr() + "\n\nUser: " + error.input)
+          conversation.push(newUserMsg)
           saveConversation()
+          newUserMsg.handle()
         } else {
           console.error('An error occurred while handling AssistantMsg: ', error);
         }
@@ -67,7 +76,7 @@ export class AssistantMsg {
     }
 
     toString(): string {
-        let str: string = 'Assitant:\n'
+        let str: string = green('Assitant:\n')
         this.tokens.forEach(token => str += token.toString() + "\n")
         return str
     }
@@ -75,8 +84,8 @@ export class AssistantMsg {
       return {role: 'assistant', content: this.toString()}
     }
 
-    MkUserMsgStr(): string {
-        let str: string = ''
+    MkUserMsgStr(userInput: string = ''): string {
+        let userMsg: string = ''
         this.tokens.forEach((token) => {
             if (token instanceof ShellCommand)
                 token.toUserMsg()
@@ -94,17 +103,19 @@ export class UserMsg {
   }
 
   async handle(): Promise<void> {
-    console.log("Awaiting for assistant answer")
+    console.log("Awaiting for assistant answer...")
     const assistantResponse: string = await getCompletion()
-    console.log("assistant answer: " , assistantResponse)
-    conversation.push(new AssistantMsg(assistantResponse))
+    // console.log("assistant answer: " , assistantResponse)
+    const assistantMsg = new AssistantMsg(assistantResponse)
+    conversation.push(assistantMsg)
     saveConversation()
+    await assistantMsg.handle()
   }
 
   toOpenAImsg(): ChatCompletionRequestMessage {
     return {role: 'user', content: this.content}
   }
   toString(): string {
-    return "User:\n" + this.content
+    return blue("User:\n") + this.content
   }
 }
