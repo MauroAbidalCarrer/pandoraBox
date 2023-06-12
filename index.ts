@@ -27,11 +27,8 @@ async function main() {
         conversation.push(userMsg);
         saveConversation() 
     }
-    while (true){
-        console.log(conversation[conversation.length - 1])
-        // console.log(conversation[conversation.length - 1] instanceof UserMsg)
-        await conversation[conversation.length - 1].handle()
-    }
+    console.log(conversation[conversation.length - 1])
+    await conversation[conversation.length - 1].handle()
 }
 
 main()
