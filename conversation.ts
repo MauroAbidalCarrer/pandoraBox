@@ -1,8 +1,10 @@
+import * as fs from 'fs';
+import { AssistantMsg, UserMsg} from './msgs';
+
 
 const fileName = process.argv.length >= 3 ? process.argv[2] : "pandora-box-conversation.json"
-export let conversation = []
+export let conversation: (AssistantMsg | UserMsg)[] = []
 
-import * as fs from 'fs';
 
 export function saveConversation(): void {
 // Convert the conversation object to JSON format
@@ -24,7 +26,6 @@ export function loadConversation(): void {
         conversation = []
         // Write the empty conversation to the file
         fs.writeFileSync(fileName, '[]', 'utf8');
-        return conversation;
       }
   
       // Read the JSON data from the file
@@ -34,7 +35,6 @@ export function loadConversation(): void {
       conversation = JSON.parse(conversationJSON);
     } catch (err) {
       console.error('Error loading conversation:', err);
-      return null;
     }
   }
   

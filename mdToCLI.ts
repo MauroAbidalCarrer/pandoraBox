@@ -4,7 +4,7 @@ export const bold = '\x1b[1m';
 export const reset = '\x1b[0m';
 export const cyan = '\u001b[36m';
 export const codeBlockPadding = 50
-
+import { red } from './colors'
 
 export function mdToCLI(markdown: string): string {
   const lines = markdown.split('\n');
@@ -27,11 +27,15 @@ export function mdToCLI(markdown: string): string {
     } else if (inCodeBlock) {
       output += "\t" + "  " + cyan + line + reset;
       output += '\n' ;
+    } else if (line.startsWith("---")) {
+      output += "".padEnd(100, "─")
     } else {
       output += line;
       output += '\n';
     }
   }
-
+  if (inCodeBlock)
+    console.log(red("ERROR: No code block encountered."))
+  output += reset
   return output;
 }
