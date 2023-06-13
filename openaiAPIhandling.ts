@@ -1,11 +1,12 @@
 import * as fs from 'fs';
-import { Configuration, OpenAIApi, ChatCompletionRequestMessage } from "openai";
+import { Configuration, OpenAIApi, ChatCompletionRequestMessage, CreateChatCompletionRequest } from "openai";
 import { config } from 'dotenv'
 import { conversation } from './conversation.js';
+import { encode } from 'gpt-3-encoder'
 
 
 let openai: OpenAIApi
-let context: string
+// let context: string
 
 export function setupOpenAI()
 {
@@ -18,22 +19,16 @@ export function setupOpenAI()
     });
     openai = new OpenAIApi(configuration);
 
-    context = fs.readFileSync("./context.txt").toString()
+    // context = fs.readFileSync("./context.txt").toString()
 }
 
 export async function getCompletion(): Promise<string> {
     try {
     // Send a request to the OpenAI API to generate text
-        const response = await openai.createChatCompletion({
-            model: "gpt-3.5-turbo",
-            messages: mkMessagesFromConversation(),
-            max_tokens: 100,
-            n: 1,
-            temperature: 0.8,
-        });
+        const response = await openai.createChatCompletion(mkMessagesFromConversation());
         // console.log(`request cost: ${response.data.usage.total_tokens} tokens`);
         // Return the text of the response
-        console.log("Answer: ", response.data.choices[0].message?.content)
+        // console.log("Answer: ", response.data.choices[0].message?.content)
         if ( response.data.choices[0]?.message?.content && typeof response.data.choices[0]?.message?.content === "string") {
             return response.data.choices[0].message.content;
         } else {
@@ -43,23 +38,24 @@ export async function getCompletion(): Promise<string> {
      catch (error) 
      {
         console.log("OpenAI api error: ", error.message)
-        const errorJSON = JSON.stringify(error, null, 2);
-
-        // Write the JSON data to a file
-        fs.writeFile("openAI-error", errorJSON, 'utf8', (err) => {
-            if (err) {
-            console.error('Error saving conversation OpenAIerror....(Well, that\'s annoying)\n', err);
-            return;
-            }
-            console.log('Invalid response from OpenAI API, Error saved in openAI-error file.');
-        });
         throw error;
     }
 }
 
-function mkMessagesFromConversation(): ChatCompletionRequestMessage[] {
-    const msgs: ChatCompletionRequestMessage[] = [{role: 'user', content: context}]
-    conversation.forEach(msg => msgs.push(msg.toOpenAImsg()))
+function mkMessagesFromConversation(): CreateChatCompletionRequest {
+    const msgs: ChatCompletionRequestMessage[] = []//[{role: 'user', content: context}]
+    let nbTokens = 4097// - encode(context).length
+    conversation.forEach((msg) => {
+        const openaiMsg = msg.toOpenAImsg()
+        nbTokens -= encode(openaiMsg.content).length
+        msgs.push(openaiMsg)
+    })
     // console.log("Msgs for openai:\n", msgs)
-    return msgs
+    return {
+        model: "gpt-3.5-turbo",
+        messages: msgs,
+        max_tokens: nbTokens,
+        n: 1,
+        temperature: 1.5,
+    }
 }

@@ -57,15 +57,15 @@ export class AssistantMsg {
             saveConversation()
           }
           //get user input for the next message
-          const userInput = await getUserInput("User: ")
-          const userMsg = new UserMsg(userInput)
+          const userInput = await getUserInput()
+          const userMsg = this.MkUserMsgStrContent(userInput)
           conversation.push(userMsg)
           userMsg.handle()
       } catch (error) {
-        console.log("error.input !== undefined: ", error.input !== undefined)
-        console.log("error instanceof UserInputException: ", error instanceof UserInputException)
+        // console.log("error.input !== undefined: ", error.input !== undefined)
+        // console.log("error instanceof UserInputException: ", error instanceof UserInputException)
         if (error.input !== undefined) {
-          const newUserMsg = new UserMsg(this.MkUserMsgStr() + "\n\nUser: " + error.input)
+          const newUserMsg = this.MkUserMsgStrContent(error.input)
           conversation.push(newUserMsg)
           saveConversation()
           newUserMsg.handle()
@@ -84,13 +84,15 @@ export class AssistantMsg {
       return {role: 'assistant', content: this.toString()}
     }
 
-    MkUserMsgStr(userInput: string = ''): string {
-        let userMsg: string = ''
+    MkUserMsgStrContent(userInput: string): UserMsg {
+        let userMsgContent: string = ''
         this.tokens.forEach((token) => {
             if (token instanceof ShellCommand)
-                token.toUserMsg()
+            userMsgContent += token.toUserMsg()
+            userMsgContent += "\n\n"
         })
-        return str
+        userMsgContent += "\n\n" + userInput
+        return new UserMsg(userMsgContent)
     }
   } 
 
@@ -103,7 +105,7 @@ export class UserMsg {
   }
 
   async handle(): Promise<void> {
-    console.log("Awaiting for assistant answer...")
+    console.log(green("Assistant: "))
     const assistantResponse: string = await getCompletion()
     // console.log("assistant answer: " , assistantResponse)
     const assistantMsg = new AssistantMsg(assistantResponse)

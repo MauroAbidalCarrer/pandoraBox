@@ -1,3 +1,4 @@
 *.js
 .env
 test.ts
+pandora-box-conversation.json

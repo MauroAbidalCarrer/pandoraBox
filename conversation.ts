@@ -3,8 +3,9 @@ import { AssistantMsg, UserMsg} from './msgs';
 import { ShellCommand } from './shellCommand';
 
 
-const fileName = process.argv.length >= 3 ? process.argv[2] : "pandora-box-conversation.json"
-export let conversation: (AssistantMsg | UserMsg)[] = []
+const conversationFileName = process.argv.length >= 3 ? process.argv[2] : "pandora-box-conversation.json"
+type Conversation = (AssistantMsg | UserMsg)[]
+export let contextConversation, conversation: Conversation = []
 
 export function saveConversation(): void {
   // console.log("Saving conversation");
@@ -43,7 +44,7 @@ export function saveConversation(): void {
   const conversationJSON = JSON.stringify(serializedConversation, null, 2);
 
   // Write the JSON data to a file
-  fs.writeFile(fileName, conversationJSON, 'utf8', (err) => {
+  fs.writeFile(conversationFileName, conversationJSON, 'utf8', (err) => {
     if (err) {
       console.error('Error saving conversation:', err);
       return;
@@ -52,17 +53,21 @@ export function saveConversation(): void {
   });
 }
 
-export function loadConversation(): void {
+export function setupConversation(): void {
+  conversation = loadConversation('context.json').concat(loadConversation(conversationFileName))
+}
+
+function loadConversation(conversationFileName: string): Conversation {
   try {
-    if (!fs.existsSync(fileName)) {
-      conversation = [];
-      fs.writeFileSync(fileName, '[]', 'utf8');
+    // let conversation: Conversation = []
+    if (!fs.existsSync(conversationFileName)) {
+      fs.writeFileSync(conversationFileName, '[]', 'utf8');
     }
 
-    const conversationJSON = fs.readFileSync(fileName, 'utf8');
+    const conversationJSON = fs.readFileSync(conversationFileName, 'utf8');
     const serializedConversation = JSON.parse(conversationJSON);
 
-    conversation = serializedConversation.map((serializedMessage: any) => {
+    const conversation = serializedConversation.map((serializedMessage: any) => {
       if (serializedMessage.type === "UserMsg") {
         return new UserMsg(serializedMessage.content);
       } else if (serializedMessage.type === "AssistantMsg") {
@@ -85,7 +90,9 @@ export function loadConversation(): void {
         throw new Error("Invalid message type in conversation");
       }
     });
+    return conversation
   } catch (err) {
     console.error('Error loading conversation:', err);
+    throw err
   }
 }

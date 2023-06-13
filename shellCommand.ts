@@ -19,14 +19,10 @@ export class ShellCommand {
       console.log(mdToCLI("```shell\n" + this.content + "\n```"));
   
       while (true) {
-        const input = await getUserInput(col.cyan('e') + 'dit/' + col.cyan('r') + 'un/' + col.cyan('s') + 'kip/' + col.cyan('c') + 'omment(will be sent to assistant) : ');
+        const input = await getUserInput(col.cyan('e') + 'dit/' + col.cyan('r') + 'un/' + col.cyan('s') + 'kip/' + col.cyan("Write") + " a comment that will be sent to the assistant: ");
         const option = input.trim().toLowerCase();
         
-        if (option === 'c') {
-            const comment = await getUserInput("comment: ")
-            throw new UserInputException(comment)
-        }
-        else if (option === 'e') {
+        if (option === 'e') {
           this.content = await getUserInput('edit: \n', this.content);
           saveConversation()
         } else if (option === 'r') {
@@ -59,6 +55,9 @@ export class ShellCommand {
           this.ranOrSkipped = true;
           return;
         }
+        else if (input.length != 0) {
+          throw new UserInputException(input)
+        }
       }
     }
   
@@ -79,7 +78,7 @@ export class ShellCommand {
 
     toUserMsg(): string{
       let str: string = 'executed command:\n'
-      str += "```shell"
+      str += "```shell\n"
       str += this.content
       if (this.stdout)
       str += 'stdout:\n' + this.stdout
