@@ -18,7 +18,7 @@ export function setupOpenAI()
         apiKey: process.env.OPENAI_API_KEY,
     });
     openai = new OpenAIApi(configuration);
-
+    console.log("Key: ", process.env.OPENAI_API_KEY)
     // context = fs.readFileSync("./context.txt").toString()
 }
 
