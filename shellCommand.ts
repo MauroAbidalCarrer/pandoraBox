@@ -1,4 +1,4 @@
-import { exec } from 'child_process';
+import { spawn } from 'child_process';
 import { mdToCLI } from './mdToCLI'
 import { getUserInput, UserInputException } from './userInput';
 import { saveConversation } from './conversation'
@@ -61,16 +61,43 @@ export class ShellCommand {
       }
     }
   
-    private executeCommand(): Promise<void> {
-      return new Promise((resolve) => {
-        exec(this.content, (error, stdout, stderr) => {
-          this.stdout = stdout || '';
-          this.stderr = stderr || '';
-          this.exitCode = error ? error.code || 1 : 0;
-          resolve();
+    executeCommand(): Promise<number> {
+      return new Promise((resolve, reject) => {
+        const childProcess = spawn(this.content, [], {
+          shell: true,
+          stdio: ['inherit', 'pipe', 'pipe'], // Capture stdout and stderr
+        });
+    
+        let stdout = '';
+        let stderr = '';
+    
+        childProcess.stdout.on('data', (data) => {
+          const output = data.toString();
+          stdout += output;
+          process.stdout.write(output); // Print to console
+        });
+    
+        childProcess.stderr.on('data', (data) => {
+          const errorOutput = data.toString();
+          stderr += errorOutput;
+          process.stderr.write(errorOutput); // Print to console
+        });
+    
+        childProcess.on('close', (code) => {
+          this.exitCode = code !== null ? code : 0; //
+          this.ranOrSkipped = true;
+          this.stdout = stdout.trim();
+          this.stderr = stderr.trim();
+          resolve(this.exitCode);
+        });
+    
+        childProcess.on('error', (error) => {
+          this.ranOrSkipped = true;
+          reject(error);
         });
       });
     }
+    
 
     toString(): string {
       return "```shell\n" + this.content + "\n```"
@@ -81,9 +108,9 @@ export class ShellCommand {
       str += "```shell\n"
       str += this.content
       if (this.stdout)
-      str += 'stdout:\n' + this.stdout
+        str += 'stdout:\n' + this.stdout
       if (this.stderr)
-      str += 'stderr:\n' + this.stderr
+        str += 'stderr:\n' + this.stderr
       str += 'exit code: ' + this.exitCode
       str += "\n```\n\n"
       return str

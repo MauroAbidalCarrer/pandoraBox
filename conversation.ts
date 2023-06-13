@@ -49,12 +49,13 @@ export function saveConversation(): void {
       console.error('Error saving conversation:', err);
       return;
     }
-    // console.log('Conversation saved successfully!');
+    console.log(`Conversation saved successfully to ${conversationFileName}!`);
   });
 }
 
 export function setupConversation(): void {
-  conversation = loadConversation('context.json').concat(loadConversation(conversationFileName))
+  conversation = loadConversation(conversationFileName)
+  contextConversation = loadConversation('context.json')
 }
 
 function loadConversation(conversationFileName: string): Conversation {

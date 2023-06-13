@@ -64,7 +64,7 @@
   },
   {
     "type": "UserMsg",
-    "content": "\n\nexecuted command:\n```shell\n./hellostdout:\nHello, world!\nexit code: 0\n```\n\n\n\n\n\n\n\nIt worked!"
+    "content": "\n\nexecuted command:\n```shell\n./hello\nstdout:\nHello, world!\nexit code: 0\n```\n\n\n\n\n\n\n\nIt worked!"
   },
   {
     "type": "AssistantMsg",
