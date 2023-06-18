@@ -13,7 +13,9 @@ export function setupOpenAI()
     if (!fs.existsSync('.env')) {
         console.log("Could not find .env, I sure hope you've exported your OPENAI_API_KEY...")
       }
-    config()
+    const path = require('path');
+    const dotenvPath = path.resolve(__dirname, '.env'); // Provide the path to .env file
+    config({ path: dotenvPath })
     const configuration = new Configuration({
         apiKey: process.env.OPENAI_API_KEY,
     });
