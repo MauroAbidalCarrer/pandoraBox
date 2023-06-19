@@ -57,12 +57,12 @@ function mkMessagesFromConversation(): CreateChatCompletionRequest {
             throw new Error("token limit reached")
         msgs.push(openaiMsg)
     })
-    console.log("nbTokensUser: ", nbTokensUser, ", remaining tokens: ", 4096 - nbTokensUser)
+    console.log("nbTokensUser: ", nbTokensUser, ", remaining tokens: ", 16380 - nbTokensUser)
     // console.log("Msgs for openai:\n", msgs)
     return {
-        model: "gpt-3.5-turbo",
+        model: "gpt-3.5-turbo-16k", //"gpt-3.5-turbo",
         messages: msgs,
-        max_tokens: 4096 - nbTokensUser,
+        max_tokens: 16380 - nbTokensUser,
         n: 1,
         temperature: 0.7,
     }
