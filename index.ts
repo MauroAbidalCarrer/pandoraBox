@@ -26,7 +26,7 @@ async function main() {
 
     //if there is no conversation
     if (conversation.length == 0) {
-        const userInput: string = await getUserInput(blue("User: "), "Write, compile and execute a hello world in C.");
+        const userInput: string = await getUserInput(blue("User: "));
         const userMsg: UserMsg = new UserMsg(userInput);
         conversation.push(userMsg);
         saveConversation() 

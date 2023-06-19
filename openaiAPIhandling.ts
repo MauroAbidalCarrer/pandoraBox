@@ -3,16 +3,19 @@ import { Configuration, OpenAIApi, ChatCompletionRequestMessage, CreateChatCompl
 import { config } from 'dotenv'
 import { contextConversation, conversation } from './conversation.js';
 import { encode } from 'gpt-3-encoder'
+import { red } from './colors.js'
 
 
 let openai: OpenAIApi
-// let context: string
+let context: string
 
 export function setupOpenAI()
 {
-    if (!fs.existsSync('.env')) {
-        console.log("Could not find .env, I sure hope you've exported your OPENAI_API_KEY...")
-      }
+    if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.length > 0)
+    {
+        console.error(red("Error: No OPENAI_API_KEY environement variable provided in shell environement or .env file in pandoraBox's directory."))
+        process.exit(1)
+    }
     const path = require('path');
     const dotenvPath = path.resolve(__dirname, '.env'); // Provide the path to .env file
     config({ path: dotenvPath })
@@ -20,8 +23,8 @@ export function setupOpenAI()
         apiKey: process.env.OPENAI_API_KEY,
     });
     openai = new OpenAIApi(configuration);
-    console.log("Key: ", process.env.OPENAI_API_KEY)
-    // context = fs.readFileSync("./context.txt").toString()
+    // console.log("Key: ", process.env.OPENAI_API_KEY)
+    // context = fs.readFileSync(path.resolve(__dirname, 'context.json')).toString()
 }
 
 export async function getCompletion(): Promise<string> {
@@ -45,8 +48,8 @@ export async function getCompletion(): Promise<string> {
 }
 
 function mkMessagesFromConversation(): CreateChatCompletionRequest {
-    const msgs: ChatCompletionRequestMessage[] = []//[{role: 'user', content: context}]
-    let nbTokensUser = 0// - encode(context).length
+    const msgs: ChatCompletionRequestMessage[] = []
+    let nbTokensUser = 0
     contextConversation.concat(conversation).forEach((msg) => {
         const openaiMsg = msg.toOpenAImsg()
         nbTokensUser += encode(openaiMsg.content).length

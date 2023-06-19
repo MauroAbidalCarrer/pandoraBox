@@ -5,7 +5,8 @@ import { ShellCommand } from './shellCommand';
 
 const conversationFileName = process.argv.length >= 3 ? process.argv[2] : "pandora-box-conversation.json"
 type Conversation = (AssistantMsg | UserMsg)[]
-export let contextConversation, conversation: Conversation = []
+export let contextConversation: Conversation = []
+export let conversation: Conversation = []
 
 export function saveConversation(): void {
   // console.log("Saving conversation");
@@ -49,13 +50,14 @@ export function saveConversation(): void {
       console.error('Error saving conversation:', err);
       return;
     }
-    console.log(`Conversation saved successfully to ${conversationFileName}!`);
+    // console.log(`Conversation saved successfully to ${conversationFileName}!`);
   });
 }
 
 export function setupConversation(): void {
   conversation = loadConversation(conversationFileName)
-  contextConversation = loadConversation('context.json')
+  const path = require('path');
+  contextConversation = loadConversation(path.resolve(__dirname, 'context.json'))
 }
 
 function loadConversation(conversationFileName: string): Conversation {
