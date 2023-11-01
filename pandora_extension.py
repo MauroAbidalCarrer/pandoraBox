@@ -1,11 +1,29 @@
-from IPython.core.magic import Magics, magics_class, line_magic, cell_magic, line_cell_magic, register_line_magic, register_cell_magic
+from IPython.core.magic import Magics, magics_class, line_cell_magic, line_magic, cell_magic, line_cell_magic, register_line_magic, register_cell_magic
 from IPython import get_ipython
 import openai
 import os
 from pprint import pprint
 from IPython.display import Markdown
+import json
 
 GPT_MODEL = "gpt-3.5-turbo-0613"
+
+
+CODE_PARAM = 'write_code_to_cell'
+FUNCTIONS = [
+    {
+        "name": "write_to_notebook",
+        "description": "Write new code cell to the notebook and communicate to user",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "msg_to_user": {"type": "string", "description": "msg to communicate to user, explain code, explain error"},
+                CODE_PARAM: {"type": "string", "description": "new code cell content that is meant to be executed"},
+            },
+            # "required": ["msg_to_user"]
+        }
+    }
+]
 
 @magics_class
 class Pandora(Magics):
@@ -15,23 +33,39 @@ class Pandora(Magics):
         self.conversation = []
         self.messages = [ {"role": "system", "content": "You are an assistant in a notebook environment."}]
 
-    # @line_magic
-    # def add_comment(self, cell):
-    #     new_cell_payload = dict(
-    #                 source="set_next_input",
-    #                 text="#Best python code ever written!",
-    #                 replace=False,
-    #             )
-    #     ip = get_ipython()
-    #     ip.payload_manager.write_payload(new_cell_payload)
+    @line_cell_magic
+    def chat(self, line,cell=None):
+        #Retrieve user msg
+        user_msg_content = line if cell is None else cell
 
-    @line_magic
-    def chat(self, line):
-        self.messages.append({"role": "user", "content":line})
-        response = openai.ChatCompletion.create(model=GPT_MODEL, messages=self.messages)
-        response_message = response.choices[0].message
-        self.messages.append(response_message)
-        return Markdown(response_message.content)
+        # Update chat
+        self.messages.append({"role": "user", "content": user_msg_content})         
+        response_completion = openai.ChatCompletion.create(
+            model=GPT_MODEL,
+            messages=self.messages,
+            functions=FUNCTIONS,
+            function_call={"name": "write_to_notebook"}
+            )
+        response_msg = response_completion.choices[0].message
+        self.messages.append(response_msg)
+
+        # Parse assistant's message
+        str_arguments = response_msg.function_call.arguments
+        str_arguments.replace('\\n', '\n')
+        json_args = json.loads(str_arguments)
+        
+        new_code_cell= json_args.get(CODE_PARAM)
+        if new_code_cell is not None:
+            new_cell_payload = dict(
+                    source="set_next_input",
+                    text=new_code_cell,
+                    replace=False,
+                )
+            get_ipython().payload_manager.write_payload(new_cell_payload)
+
+        msg_to_user = json_args.get("msg_to_user")
+        if msg_to_user is not None:
+            return Markdown(msg_to_user.replace('\n', '\n  '))
 
 
 
